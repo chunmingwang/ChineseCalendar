@@ -5,44 +5,41 @@
 '#Region "Form"
 	#if defined(__FB_MAIN__) AndAlso Not defined(__MAIN_FILE__)
 		#define __MAIN_FILE__
-		Const _MAIN_FILE_ = __FILE__
 		#ifdef __FB_WIN32__
 			#cmdline "Clock.rc"
 		#endif
+		Const _MAIN_FILE_ = __FILE__
 	#endif
 	#include once "mff/Form.bi"
 	#include once "mff/Panel.bi"
 	#include once "mff/TimerComponent.bi"
+	#include once "mff/Picture.bi"
+	#include once "mff/Menus.bi"
 	
 	#include once "string.bi"
 	#include once "vbcompat.bi"
-	#include once "Calendar.bi"
 	
-	#include once "DrawDitalClock.bi"
-	#include once "frmCalendar.frm"
+	#include once "LunarCalendar.bi"
+	#include once "DrawClockCalendar.bi"
 	
 	Using My.Sys.Forms
 	
 	Type frmClockType Extends Form
-		DrawNC As DrawDitalClock
+		DClock As DitalClock
 		
-		Declare Static Sub _TimerComponent1_Timer(ByRef Sender As TimerComponent)
 		Declare Sub TimerComponent1_Timer(ByRef Sender As TimerComponent)
-		Declare Static Sub _TimerComponent2_Timer(ByRef Sender As TimerComponent)
 		Declare Sub TimerComponent2_Timer(ByRef Sender As TimerComponent)
-		Declare Static Sub _Form_Paint(ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas)
-		Declare Sub Form_Paint(ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas)
-		Declare Static Sub _Form_DblClick(ByRef Sender As Control)
-		Declare Sub Form_DblClick(ByRef Sender As Control)
-		Declare Static Sub _Form_Create(ByRef Sender As Control)
+		Declare Sub Picture1_Paint(ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas)
+		Declare Sub mnuAlwaysOnTop_Click(ByRef Sender As MenuItem)
 		Declare Sub Form_Create(ByRef Sender As Control)
-		Declare Static Sub _Form_MouseUp(ByRef Sender As Control, MouseButton As Integer, x As Integer, y As Integer, Shift As Integer)
-		Declare Sub Form_MouseUp(ByRef Sender As Control, MouseButton As Integer, x As Integer, y As Integer, Shift As Integer)
-		Declare Static Sub _Form_MouseWheel(ByRef Sender As Control, Direction As Integer, x As Integer, y As Integer, Shift As Integer)
-		Declare Sub Form_MouseWheel(ByRef Sender As Control, Direction As Integer, x As Integer, y As Integer, Shift As Integer)
+		Declare Sub Form_Destroy(ByRef Sender As Control)
+		Declare Sub Form_Message(ByRef Sender As Control, ByRef Msg As Message)
 		Declare Constructor
 		
 		Dim As TimerComponent TimerComponent1, TimerComponent2
+		Dim As Panel Picture1
+		Dim As PopupMenu PopupMenu1
+		Dim As MenuItem mnuAlwaysOnTop, mnuClickThrough, mnuAutoStart, mnuTransparent, mnuBar1, mnuArrange, mnuDayCalendar, mnuMonthCalendar, mnuBar2, mnuAbout, mnuBar3, mnuExit, mnuClose, mnuHide
 	End Type
 	
 	Constructor frmClockType
@@ -50,30 +47,25 @@
 		With This
 			.Name = "frmClock"
 			.Text = "VFBE Clock 32"
-			#ifdef __USE_GTK__
-				This.Icon.LoadFromFile(ExePath & ".\clock.ico")
-			#else
-				This.Icon.LoadFromResourceID(1)
-			#endif
 			#ifdef __FB_64BIT__
-				.Caption = "VFBE Clock 64"
+				.Caption = "VFBE Clock64"
 			#else
-				.Caption = "VFBE Clock 32"
+				.Caption = "VFBE Clock32"
 			#endif
 			.Designer = @This
 			.Font.Name = "Consolas"
 			.Font.Size = 12
 			.Font.Bold = True
-			.BorderStyle = FormBorderStyle.FixedSingle
-			.MaximizeBox = False
+			.BorderStyle = FormBorderStyle.Sizable
 			.StartPosition = FormStartPosition.CenterScreen
 			.Location = Type<My.Sys.Drawing.Point>(0, 0)
-			.OnPaint = @_Form_Paint
-			.OnDblClick = @_Form_DblClick
-			.OnCreate = @_Form_Create
-			.OnMouseUp = @_Form_MouseUp
-			.OnMouseWheel = @_Form_MouseWheel
-			.SetBounds 0, 0, 350, 300
+			.Size = Type<My.Sys.Drawing.Size>(330, 130)
+			.ContextMenu = @PopupMenu1
+			.OnCreate = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As Control), @Form_Create)
+			.OnDestroy = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As Control), @Form_Destroy)
+			.OnMessage = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As Control, ByRef Msg As Message), @Form_Message)
+			.Icon = "1"
+			.SetBounds 0, 0, 330, 140
 		End With
 		' TimerComponent1
 		With TimerComponent1
@@ -82,7 +74,7 @@
 			.Enabled = True
 			.SetBounds 10, 10, 16, 16
 			.Designer = @This
-			.OnTimer = @_TimerComponent1_Timer
+			.OnTimer = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As TimerComponent), @TimerComponent1_Timer)
 			.Parent = @This
 		End With
 		' TimerComponent2
@@ -91,38 +83,141 @@
 			.Interval = 500
 			.SetBounds 40, 10, 16, 16
 			.Designer = @This
-			.OnTimer = @_TimerComponent2_Timer
+			.OnTimer = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As TimerComponent), @TimerComponent2_Timer)
 			.Parent = @This
 		End With
+		' Picture1
+		With Picture1
+			.Name = "Picture1"
+			.Text = ""
+			.TabIndex = 0
+			.Align = DockStyle.alClient
+			.Location = Type<My.Sys.Drawing.Point>(0, 0)
+			.Size = Type<My.Sys.Drawing.Size>(324, 91)
+			.Enabled = False
+			.SetBounds 65190, 0, 314, 101
+			.Designer = @This
+			.OnPaint = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas), @Picture1_Paint)
+			.Parent = @This
+		End With
+		' PopupMenu1
+		With PopupMenu1
+			.Name = "PopupMenu1"
+			.SetBounds 70, 10, 16, 16
+			.Designer = @This
+			.Parent = @This
+		End With
+		' mnuAlwaysOnTop
+		With mnuAlwaysOnTop
+			.Name = "mnuAlwaysOnTop"
+			.Designer = @This
+			.Caption = "Always on top"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuClickThrough
+		With mnuClickThrough
+			.Name = "mnuClickThrough"
+			.Designer = @This
+			.Caption = "Click through"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuAutoStart
+		With mnuAutoStart
+			.Name = "mnuAutoStart"
+			.Designer = @This
+			.Caption = "Auto Start"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuTransparent
+		With mnuTransparent
+			.Name = "mnuTransparent"
+			.Designer = @This
+			.Caption = "Transparent"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuHide
+		With mnuHide
+			.Name = "mnuHide"
+			.Designer = @This
+			.Caption = "Hide"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuBar1
+		With mnuBar1
+			.Name = "mnuBar1"
+			.Designer = @This
+			.Caption = "-"
+			.Parent = @PopupMenu1
+		End With
+		' mnuArrange
+		With mnuArrange
+			.Name = "mnuArrange"
+			.Designer = @This
+			.Caption = "Arrange"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuDayCalendar
+		With mnuDayCalendar
+			.Name = "mnuDayCalendar"
+			.Designer = @This
+			.Caption = "Day calendar"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuMonthCalendar
+		With mnuMonthCalendar
+			.Name = "mnuMonthCalendar"
+			.Designer = @This
+			.Caption = "Month calendar"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuClose
+		With mnuClose
+			.Name = "mnuClose"
+			.Designer = @This
+			.Caption = "Close"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuBar2
+		With mnuBar2
+			.Name = "mnuBar2"
+			.Designer = @This
+			.Caption = "-"
+			.Parent = @PopupMenu1
+		End With
+		' mnuAbout
+		With mnuAbout
+			.Name = "mnuAbout"
+			.Designer = @This
+			.Caption = "About"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuBar3
+		With mnuBar3
+			.Name = "mnuBar3"
+			.Designer = @This
+			.Caption = "-"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
+		' mnuExit
+		With mnuExit
+			.Name = "mnuExit"
+			.Designer = @This
+			.Caption = "Exit"
+			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuAlwaysOnTop_Click)
+			.Parent = @PopupMenu1
+		End With
 	End Constructor
-	
-	Private Sub frmClockType._Form_MouseWheel(ByRef Sender As Control, Direction As Integer, x As Integer, y As Integer, Shift As Integer)
-		(*Cast(frmClockType Ptr, Sender.Designer)).Form_MouseWheel(Sender, Direction, x, y, Shift)
-	End Sub
-	
-	Private Sub frmClockType._Form_MouseUp(ByRef Sender As Control, MouseButton As Integer, x As Integer, y As Integer, Shift As Integer)
-		(*Cast(frmClockType Ptr, Sender.Designer)).Form_MouseUp(Sender, MouseButton, x, y, Shift)
-	End Sub
-	
-	Private Sub frmClockType._Form_Create(ByRef Sender As Control)
-		(*Cast(frmClockType Ptr, Sender.Designer)).Form_Create(Sender)
-	End Sub
-	
-	Private Sub frmClockType._Form_DblClick(ByRef Sender As Control)
-		(*Cast(frmClockType Ptr, Sender.Designer)).Form_DblClick(Sender)
-	End Sub
-	
-	Private Sub frmClockType._Form_Paint(ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas)
-		(*Cast(frmClockType Ptr, Sender.Designer)).Form_Paint(Sender, Canvas)
-	End Sub
-	
-	Private Sub frmClockType._TimerComponent2_Timer(ByRef Sender As TimerComponent)
-		(*Cast(frmClockType Ptr, Sender.Designer)).TimerComponent2_Timer(Sender)
-	End Sub
-	
-	Private Sub frmClockType._TimerComponent1_Timer(ByRef Sender As TimerComponent)
-		(*Cast(frmClockType Ptr, Sender.Designer)).TimerComponent1_Timer(Sender)
-	End Sub
 	
 	Dim Shared frmClock As frmClockType
 	
@@ -133,76 +228,197 @@
 	#endif
 '#End Region
 
+'Region Tray Menu
+#include once "windows.bi"
+Dim Shared As NOTIFYICONDATA SystrayIcon
+Const WM_SHELLNOTIFY = WM_USER + 5
+
+#include once "frmDayCalendar.frm"
+#include once "frmMonthCalendar.frm"
+
+Function CheckAutoStart() As Integer
+	'Region registry
+	Dim As Any Ptr hReg
+	Static As WString Ptr sNewRegValue= 0
+	Dim As DWORD lRegLen = 0
+	Dim As DWORD lpType  = 0
+	Dim As Long lRes
+	
+	'open
+	lRes = RegOpenKeyEx(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 0, KEY_ALL_ACCESS, @hReg)
+	If lRes <> ERROR_SUCCESS Then
+		Exit Function
+	End If
+	
+	lRes = RegQueryValueEx(hReg, WStr("VFBE ChineseCalendar"), 0, @lpType, 0, @lRegLen)
+	If lRes <> ERROR_SUCCESS Then Exit Function
+	
+	sNewRegValue = Reallocate(sNewRegValue, (lRegLen + 1) * 2)
+	lRes = RegQueryValueEx(hReg, WStr("VFBE ChineseCalendar"), 0, @lpType, Cast(Byte Ptr, sNewRegValue), @lRegLen)
+	If lRes <> ERROR_SUCCESS Then Exit Function
+	
+	'close registry
+	RegCloseKey(hReg)
+	
+	Return lRegLen
+End Function
+
+Sub AutoStartReg(flag As Boolean = True)
+	'Region registry
+	Dim As Any Ptr hReg
+	Dim As WString Ptr sNewRegValue
+	Dim As Integer lRegLen = (Len(WChr(34) & Command(0) & WChr(34) & WChr(0)) + 1) * 2
+	
+	sNewRegValue = Allocate(lRegLen)
+	*sNewRegValue = WChr(34) & Command(0) & WChr(34) & WChr(0)
+	
+	'open
+	RegOpenKeyEx(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 0, KEY_ALL_ACCESS, @hReg)
+	
+	If flag Then
+		RegSetValueEx(hReg, WStr("VFBE ChineseCalendar"), NULL, REG_SZ, Cast(Byte Ptr, sNewRegValue), lRegLen)
+	Else
+		RegDeleteValue(hReg, WStr("VFBE ChineseCalendar"))
+	End If
+	
+	RegFlushKey(hReg)
+	
+	'close registry
+	RegCloseKey(hReg)
+	Deallocate(sNewRegValue)
+End Sub
+
+
 Private Sub frmClockType.TimerComponent1_Timer(ByRef Sender As TimerComponent)
 	Static st As String
-	Static sd As String
 	Dim dnow As Double= Now()
 	Dim dt As String = Format(dnow, "hh:mm:ss")
 	If st = dt Then Exit Sub
 	st = dt
 	TimerComponent2.Enabled = False
 	TimerComponent2.Enabled = True
-	
-	Dim dd As String = Format(dnow, "yyyy/mm/dd")
-	If sd = dd Then
-		DrawNC.PaintClock Canvas, Now, 1, False
-	Else
-		DrawNC.PaintClock Canvas, Now, 1, True
-		sd = dd
-	End If
+	DClock.DrawClock Picture1.Canvas, dnow, 1
 End Sub
 
 Private Sub frmClockType.TimerComponent2_Timer(ByRef Sender As TimerComponent)
 	TimerComponent2.Enabled = False
-	DrawNC.PaintClock Canvas, Now, 0, False
+	DClock.DrawClock Picture1.Canvas, Now, 0
 End Sub
 
-Private Sub frmClockType.Form_Paint(ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas)
-	DrawNC.PaintClock Canvas, Now, -1, True
+Private Sub frmClockType.Picture1_Paint(ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas)
+	DClock.DrawClock Canvas, Now, -1
 End Sub
 
-Private Sub frmClockType.Form_DblClick(ByRef Sender As Control)
-	frmCalendar.Show(frmClock)
+Private Sub frmClockType.mnuAlwaysOnTop_Click(ByRef Sender As MenuItem)
+	Select Case Sender.Name
+	Case "mnuAlwaysOnTop"
+		If Sender.Checked Then
+			Sender.Checked = False
+			SetWindowPos Handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOACTIVATE
+			SetWindowLongPtr(Handle, GWL_EXSTYLE, GetWindowLongPtr(Handle, GWL_EXSTYLE) Xor WS_EX_TOPMOST Or WS_EX_LAYERED)
+		Else
+			Sender.Checked = True
+			SetWindowPos Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOACTIVATE
+			SetWindowLongPtr(Handle, GWL_EXSTYLE, GetWindowLongPtr(Handle, GWL_EXSTYLE) Or WS_EX_TOPMOST Or WS_EX_LAYERED)
+		End If
+	Case "mnuClickThrough"
+		If Sender.Checked Then
+			Sender.Checked = False
+			SetWindowLongPtr(Handle, GWL_EXSTYLE, GetWindowLongPtr(Handle, GWL_EXSTYLE) Xor WS_EX_TRANSPARENT Or WS_EX_LAYERED)
+		Else
+			Sender.Checked = True
+			SetWindowLongPtr(Handle, GWL_EXSTYLE, GetWindowLongPtr(Handle, GWL_EXSTYLE) Or WS_EX_TRANSPARENT Or WS_EX_LAYERED)
+		End If
+	Case "mnuAutoStart"
+		If Sender.Checked Then
+			Sender.Checked = False
+		Else
+			Sender.Checked = True
+		End If
+		AutoStartReg Sender.Checked
+		CheckAutoStart
+	Case "mnuTransparent"
+		If Sender.Checked Then
+			Sender.Checked = False
+		Else
+			Sender.Checked = True
+		End If
+		Opacity = IIf(Sender.Checked = True, 127, 255)
+		frmDayCalendar.Opacity = IIf(Sender.Checked = True, 127, 255)
+		frmMonthCalendar.Opacity = IIf(Sender.Checked = True, 127, 255)
+	Case "mnuHide"
+		Sender.Checked = Sender.Checked = False
+		This.Visible = Sender.Checked = False
+		If mnuDayCalendar.Checked Then frmDayCalendar.Visible = This.Visible
+		If mnuMonthCalendar.Checked Then frmMonthCalendar.Visible = This.Visible
+	Case "mnuArrange"
+		If mnuDayCalendar.Checked Then frmDayCalendar.Move Left, Top + Height, Width, Height * 2
+		If mnuMonthCalendar.Checked Then frmMonthCalendar.Move frmDayCalendar.Left, frmDayCalendar.Top + frmDayCalendar.Height, Width, Height * 2
+	Case "mnuDayCalendar"
+		If Sender.Checked Then
+			frmDayCalendar.CloseForm
+			Sender.Checked = False
+		Else
+			frmDayCalendar.Show(frmClock)
+			frmDayCalendar.Visible = mnuHide.Checked = False
+			Sender.Checked = True
+		End If
+	Case "mnuMonthCalendar"
+		If Sender.Checked Then
+			frmMonthCalendar.CloseForm
+			Sender.Checked = False
+		Else
+			frmMonthCalendar.Show(frmClock)
+			frmMonthCalendar.Visible = mnuHide.Checked = False
+			Sender.Checked = True
+		End If
+	Case "mnuClose"
+		If mnuDayCalendar.Checked Then frmDayCalendar.CloseForm
+		If mnuMonthCalendar.Checked Then frmMonthCalendar.CloseForm
+	Case "mnuAbout"
+		MsgBox(!"Visual FB Editor\r\n\r\nChineseCalendar Example\r\nBy Cm Wang", "ChineseCalendar Example")
+	Case "mnuExit"
+		CloseForm
+	End Select
 End Sub
 
 Private Sub frmClockType.Form_Create(ByRef Sender As Control)
-	DrawNC.Initial Canvas
-	DrawNC.FontSize = 48
-	Form_MouseUp Sender, 0, 0, 0, 0
+	If CheckAutoStart() Then mnuAutoStart.Checked = True
+	
+	With SystrayIcon
+		.cbSize = SizeOf(SystrayIcon)
+		.hWnd = Handle
+		.uID = This.ID
+		.uFlags = NIF_ICON Or NIF_TIP Or NIF_MESSAGE
+		.szTip = !"VisualFBEditor\r\nChineseCalendar\0"
+		.uCallbackMessage = WM_SHELLNOTIFY
+		.hIcon = This.Icon.Handle
+		.uVersion = NOTIFYICON_VERSION
+	End With
+	Shell_NotifyIcon(NIM_ADD, @SystrayIcon)
+	
+	With SystrayIcon
+		.uFlags =  NIF_INFO
+		.szInfo = !"Chinese Calendar\0"
+		.szInfoTitle = !"VisualFBEditor\0"
+		.uTimeout = 1
+		.dwInfoFlags = 1
+	End With
+	Shell_NotifyIcon(NIM_MODIFY, @SystrayIcon)
 End Sub
 
-Private Sub frmClockType.Form_MouseUp(ByRef Sender As Control, MouseButton As Integer, x As Integer, y As Integer, Shift As Integer)
-	Select Case MouseButton
-	Case 0 'left
-	Case 1 'right
-		If DrawNC.ShowCalendar Then
-			DrawNC.ShowCalendar = False
-		Else
-			DrawNC.ShowCalendar = True
+Private Sub frmClockType.Form_Destroy(ByRef Sender As Control)
+	Shell_NotifyIcon(NIM_DELETE, @SystrayIcon)
+End Sub
+
+Private Sub frmClockType.Form_Message(ByRef Sender As Control, ByRef Msg As Message)
+	Select Case Msg.Msg
+	Case WM_SHELLNOTIFY
+		If Msg.lParam = WM_RBUTTONDOWN Then
+			Dim tPOINT As Point
+			GetCursorPos(@tPOINT)
+			SetForegroundWindow(Handle)
+			PopupMenu1.Popup(tPOINT.X, tPOINT.Y)
 		End If
-	Case 2 'middle
 	End Select
-	'获取控件矩形
-	Dim lRT As Rect
-	GetClientRect(Handle, @lRT)
-	'设置窗口大小
-	Height = Height - lRT.Bottom + lRT.Top + DrawNC.Height
-	Width = Width - lRT.Right + lRT.Left + DrawNC.Width
-	DrawNC.PaintClock Canvas, Now, -1, True
-End Sub
-
-Private Sub frmClockType.Form_MouseWheel(ByRef Sender As Control, Direction As Integer, x As Integer, y As Integer, Shift As Integer)
-	Select Case Direction
-	Case -1
-		If DrawNC.FontSize > 40 Then DrawNC.FontSize = DrawNC.FontSize - 2
-	Case 1
-		If DrawNC.FontSize < 200 Then DrawNC.FontSize = DrawNC.FontSize + 2
-	End Select
-	'获取控件矩形
-	Dim lRT As Rect
-	GetClientRect(Handle, @lRT)
-	'设置窗口大小
-	Height = Height - lRT.Bottom + lRT.Top + DrawNC.Height
-	Width = Width - lRT.Right + lRT.Left + DrawNC.Width
-	DrawNC.PaintClock Canvas, Now, -1, True
 End Sub
