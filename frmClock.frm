@@ -40,7 +40,7 @@
 		Dim As TimerComponent TimerComponent1, TimerComponent2
 		Dim As Panel Picture1
 		Dim As PopupMenu PopupMenu1
-		Dim As MenuItem mnuAlwaysOnTop, mnuClickThrough, mnuAutoStart, mnuTransparent, mnuBar1, mnuArrange, mnuDayCalendar, mnuMonthCalendar, mnuBar2, mnuAbout, mnuBar3, mnuExit, mnuClose, mnuHide, mnuBlinkColon, mnuShowSec, mnuHideCaption, mnuNoneBorder, mnuBar0, MenuItem1, MenuItem2, MenuItem3, MenuItem4
+		Dim As MenuItem mnuAlwaysOnTop, mnuClickThrough, mnuAutoStart, mnuTransparent, mnuBar1, mnuArrange, mnuDayCalendar, mnuMonthCalendar, mnuBar2, mnuAbout, mnuBar3, mnuExit, mnuClose, mnuHide, mnuBlinkColon, mnuShowSec, mnuHideCaption, mnuNoneBorder
 	End Type
 	
 	Constructor frmClockType
@@ -185,20 +185,6 @@
 			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnu_Click)
 			.Parent = @PopupMenu1
 		End With
-		' mnuBar0
-		With mnuBar0
-			.Name = "mnuBar0"
-			.Designer = @This
-			.Caption = "-"
-			.Parent = @PopupMenu1
-		End With
-		' MenuItem1
-		With MenuItem1
-			.Name = "MenuItem1"
-			.Designer = @This
-			.Caption = "Speech time"
-			.Parent = @PopupMenu1
-		End With
 		' mnuBar1
 		With mnuBar1
 			.Name = "mnuBar1"
@@ -268,27 +254,6 @@
 			.Caption = "Exit"
 			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnu_Click)
 			.Parent = @PopupMenu1
-		End With
-		' MenuItem2
-		With MenuItem2
-			.Name = "MenuItem2"
-			.Designer = @This
-			.Caption = "Hourly"
-			.Parent = @MenuItem1
-		End With
-		' MenuItem3
-		With MenuItem3
-			.Name = "MenuItem3"
-			.Designer = @This
-			.Caption = "Half hour"
-			.Parent = @MenuItem1
-		End With
-		' MenuItem4
-		With MenuItem4
-			.Name = "MenuItem4"
-			.Designer = @This
-			.Caption = "MenuItem4"
-			.Parent = @MenuItem1
 		End With
 	End Constructor
 	
