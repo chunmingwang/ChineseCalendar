@@ -124,7 +124,9 @@
 			.Align = DockStyle.alClient
 			.Location = Type<My.Sys.Drawing.Point>(0, 40)
 			.Size = Type<My.Sys.Drawing.Size>(334, 221)
-			.SetBounds 0, 23, 314, 188
+			.DoubleBuffered = True
+			.BackColor = -1
+			.SetBounds 0, 23, 314, 192
 			.Designer = @This
 			.OnPaint = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas), @Panel2_Paint)
 			.OnMouseUp = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As Control, MouseButton As Integer, x As Integer, y As Integer, Shift As Integer), @Panel2_MouseUp)
@@ -159,15 +161,16 @@ Private Sub frmMonthCalendarType.Form_Create(ByRef Sender As Control)
 End Sub
 
 Private Sub frmMonthCalendarType.ComboBoxEdit1_Selected(ByRef Sender As ComboBoxEdit, ItemIndex As Integer)
-	Panel2_Paint Sender, Panel2.Canvas
+	Panel2.Repaint
+	'Panel2_Paint Sender, Panel2.Canvas
 End Sub
 
 Private Sub frmMonthCalendarType.CommandButton1_Click(ByRef Sender As Control)
 	ComboBoxEdit1.ItemIndex = Year(Now) - 2020
 	ComboBoxEdit2.ItemIndex = Month(Now) - 1
 	ComboBoxEdit3.ItemIndex = Day(Now) - 1
-	
-	Panel2_Paint Sender, Panel2.Canvas
+	Panel2.Repaint
+	'Panel2_Paint Sender, Panel2.Canvas
 End Sub
 
 Private Sub frmMonthCalendarType.Panel2_Paint(ByRef Sender As Control, ByRef Canvas As My.Sys.Drawing.Canvas)
@@ -178,8 +181,9 @@ Private Sub frmMonthCalendarType.Panel2_Paint(ByRef Sender As Control, ByRef Can
 		Caption = "VFBE MonthCalendar32 - " & Format(DateTime, "yyyy/mm/dd")
 	#endif
 	DMCalendar.DrawMonthCalendar(Canvas, DateTime)
-	frmDayCalendar.DCDate= DateTime
-	frmDayCalendar.Panel1_Paint Sender, frmDayCalendar.Panel1.Canvas
+	frmDayCalendar.DCDate = DateTime
+	frmDayCalendar.Panel1.Repaint
+	'frmDayCalendar.Panel1_Paint Sender, frmDayCalendar.Panel1.Canvas
 End Sub
 
 Private Sub frmMonthCalendarType.Panel2_MouseUp(ByRef Sender As Control, MouseButton As Integer, x As Integer, y As Integer, Shift As Integer)
@@ -187,7 +191,8 @@ Private Sub frmMonthCalendarType.Panel2_MouseUp(ByRef Sender As Control, MouseBu
 	ComboBoxEdit1.ItemIndex = Year(DateTime) - 2020
 	ComboBoxEdit2.ItemIndex = Month(DateTime) - 1
 	ComboBoxEdit3.ItemIndex = Day(DateTime) - 1
-	Panel2_Paint Sender, Panel2.Canvas
+	Panel2.Repaint
+	'Panel2_Paint Sender, Panel2.Canvas
 End Sub
 
 Private Sub frmMonthCalendarType.Form_Close(ByRef Sender As Form, ByRef Action As Integer)
@@ -196,6 +201,8 @@ End Sub
 
 Private Sub frmMonthCalendarType.Panel2_MouseMove(ByRef Sender As Control, MouseButton As Integer, x As Integer, y As Integer, Shift As Integer)
 	If MouseButton <> 0 Then Exit Sub
-	ReleaseCapture()
-	SendMessage(Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0)
+	#ifdef __USE_WINAPI__
+		ReleaseCapture()
+		SendMessage(Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0)
+	#endif
 End Sub
