@@ -3,13 +3,13 @@
 This project needs to rely on SapiTTS
 
 ## Digital Clock
-![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/5923d355-2102-4a65-920b-a8c74b5481c5)
+![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/45eb9fcc-b950-41e0-aef4-0c3547bb3b22)
 
 ## Day Calendar
-![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/8a2dab47-21d1-4f1b-8204-1ba470226162)
+![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/3c31e908-fb6c-42ad-8357-f938ecfdeb25)
 
 ## Month Calendar
-![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/ecde0e5a-c252-44dc-9966-016cd47b6b67)
+![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/7c03efba-9bcb-44f3-b73a-6e1e511d95c4)
 
 ## System tray
 ![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/f7a4aa99-5fbb-439d-84a3-53279d4d628f)
