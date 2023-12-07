@@ -3,7 +3,7 @@
 This project needs to rely on SapiTTS
 
 ## Digital Clock
-![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/45eb9fcc-b950-41e0-aef4-0c3547bb3b22)
+![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/c2bdbcc5-49b9-41aa-982c-0f3000334a4a)
 
 ## Day Calendar
 ![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/3c31e908-fb6c-42ad-8357-f938ecfdeb25)
