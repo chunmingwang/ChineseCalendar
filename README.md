@@ -1,6 +1,6 @@
 # Chinese Calendar
 
-This project needs to rely on SapiTTS
+This project needs to rely on Sapi project
 
 ## Digital Clock
 ![image](https://github.com/chunmingwang/ChineseCalendar/assets/35757455/c2bdbcc5-49b9-41aa-982c-0f3000334a4a)
