@@ -1,5 +1,5 @@
 ﻿' Chinese Calendar 中国日历
-' Copyright (c) 2024 CM.Wang
+' Copyright (c) 2025 CM.Wang
 ' Freeware. Use at your own risk.
 
 '#Region "Form"
@@ -15,12 +15,13 @@
 	#include once "mff/TimerComponent.bi"
 	#include once "mff/Picture.bi"
 	#include once "mff/Menus.bi"
+	#include once "mff/ComboBoxEdit.bi"
 	
 	#include once "string.bi"
 	#include once "vbcompat.bi"
 	
 	#include once "DrawClockCalendar.bi"
-	#include once "../SapiTTS/Speech.bi"
+	#include once "../Sapi/Speech.bi"
 	
 	Using My.Sys.Forms
 	Using Speech
@@ -29,7 +30,7 @@
 	
 	Type frmClockType Extends Form
 		#ifdef __USE_WINAPI__
-			pSpVoice As Afx_ISpVoice Ptr
+			pSpVoice As ISpVoice Ptr
 		#endif
 		
 		mDClock As DitalClock
@@ -58,7 +59,7 @@
 		Dim As TimerComponent TimerComponent1, TimerComponent2
 		Dim As Panel Panel1
 		Dim As PopupMenu PopupMenu1
-		Dim As MenuItem mnuAlwaysOnTop, mnuClickThrough, mnuAutoStart, mnuTransparent, mnuBar3, mnuArrange, mnuDayCalendar, mnuMonthCalendar, mnuBar4, mnuAbout, mnuBar5, mnuExit, mnuClose, mnuHide, mnuBlinkColon, mnuShowSec, mnuHideCaption, mnuNoneBorder, mnuBar2, mnuAnnounce, mnuAnnounce1, mnuAnnounce2, mnuAnnounce3, mnuAnnounce0, mnuABar1, mnuBar1, mnuAudio, mnuVoice, mnuHeight, mnuOpacity, mnuSpeechNow
+		Dim As MenuItem mnuAlwaysOnTop, mnuClickThrough, mnuAutoStart, mnuTransparent, mnuBar3, mnuSticky, mnuDayCalendar, mnuMonthCalendar, mnuBar4, mnuAbout, mnuBar5, mnuExit, mnuClose, mnuHide, mnuBlinkColon, mnuShowSec, mnuHideCaption, mnuNoneBorder, mnuBar2, mnuAnnounce, mnuAnnounce1, mnuAnnounce2, mnuAnnounce3, mnuAnnounce0, mnuABar1, mnuBar1, mnuAudio, mnuVoice, mnuHeight, mnuOpacity, mnuSpeechNow
 	End Type
 	
 	Constructor frmClockType
@@ -259,11 +260,11 @@
 			.Caption = "-"
 			.Parent = @PopupMenu1
 		End With
-		' mnuArrange
-		With mnuArrange
-			.Name = "mnuArrange"
+		' mnuSticky
+		With mnuSticky
+			.Name = "mnuSticky"
 			.Designer = @This
-			.Caption = "Arrange"
+			.Caption = "Sticky"
 			.Checked = True
 			.OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuMenu_Click)
 			.Parent = @PopupMenu1
@@ -493,8 +494,8 @@ Private Sub frmClockType.SpeechInit()
 	#ifdef __USE_WINAPI__
 		' // Create an instance of the SpVoice object
 		Dim classID As IID, riid As IID
-		CLSIDFromString(Afx_CLSID_SpVoice, @classID)
-		IIDFromString(Afx_IID_ISpVoice, @riid)
+		CLSIDFromString(CLSID_SpVoice, @classID)
+		IIDFromString(IID_ISpVoice, @riid)
 		CoCreateInstance(@classID, NULL, CLSCTX_ALL, @riid, @pSpVoice)
 		If pSpVoice = NULL Then Exit Sub
 		
@@ -505,12 +506,12 @@ Private Sub frmClockType.SpeechInit()
 		' // Set the handle of the window that will receive the MSG_SAPI_EVENT message
 		pSpVoice->SetNotifyWindowMessage(Handle, MSG_SAPI_EVENT, 0, 0)
 		
-		Dim pVoice As Afx_ISpObjectToken Ptr
-		Dim pAudio As Afx_ISpObjectToken Ptr
-		Dim pTokenCategory As Afx_ISpObjectTokenCategory Ptr
-		Dim pTokenEnum As Afx_IEnumSpObjectTokens Ptr
+		Dim pVoice As ISpObjectToken Ptr
+		Dim pAudio As ISpObjectToken Ptr
+		Dim pTokenCategory As ISpObjectTokenCategory Ptr
+		Dim pTokenEnum As IEnumSpObjectTokens Ptr
 		
-		Dim pTokenItem As Afx_ISpObjectToken Ptr
+		Dim pTokenItem As ISpObjectToken Ptr
 		Dim pStr As WString Ptr = CAllocate(0, 2048)
 		Dim pCount As Long
 		Dim i As Long
@@ -560,7 +561,7 @@ Private Sub frmClockType.SpeechInit()
 			For i = 0 To mAudioCount
 				pTokenEnum->Item(i, @pTokenItem)
 				pTokenItem->GetStringValue(NULL, @pStr)
-		
+				
 				mnuAudioSub(i) = New MenuItem
 				mnuAudioSub(i)->Designer = @This
 				mnuAudioSub(i)->Parent = @mnuAudio
@@ -568,18 +569,18 @@ Private Sub frmClockType.SpeechInit()
 				mnuAudioSub(i)->Caption = *pStr
 				mnuAudioSub(i)->OnClick = Cast(Sub(ByRef Designer As My.Sys.Object, ByRef Sender As MenuItem), @mnuMenu_Click)
 				mnuAudioSub(i)->Tag = pTokenItem
-		
+				
 				mnuAudio.Add mnuAudioSub(i)
 			Next
 			mnuAudioSub(0)->Checked = True
-		
+			
 			pAudio->Release()
 			pAudio = NULL
 			pTokenCategory->Release()
 			pTokenCategory = NULL
 			pTokenEnum->Release()
 			pTokenEnum = NULL
-		
+			
 			mnuAudio.Enabled = True
 		End If
 	#endif
@@ -709,7 +710,7 @@ Private Sub frmClockType.mnuMenu_Click(ByRef Sender As MenuItem)
 		If frmDayCalendar.Handle Then frmDayCalendar.Panel1.Repaint
 		If frmMonthCalendar.Handle Then frmMonthCalendar.Panel2.Repaint
 		Panel1.Repaint
-	Case "mnuArrange"
+	Case "mnuSticky"
 		Sender.Checked = Not Sender.Checked
 		Form_Resize(This, 0, 0)
 	Case "mnuDayCalendar"
@@ -773,7 +774,7 @@ Private Sub frmClockType.mnuMenu_Click(ByRef Sender As MenuItem)
 			For i = 0 To mVoiceCount
 				If @Sender = mnuVoiceSub(i) Then
 					#ifdef __USE_WINAPI__
-						If pSpVoice Then pSpVoice->SetVoice(Cast(Afx_ISpObjectToken Ptr, Sender.Tag))
+						If pSpVoice Then pSpVoice->SetVoice(Cast(ISpObjectToken Ptr, Sender.Tag))
 					#endif
 				Else
 					mnuVoiceSub(i)->Checked = False
@@ -784,7 +785,7 @@ Private Sub frmClockType.mnuMenu_Click(ByRef Sender As MenuItem)
 			For i = 0 To mAudioCount
 				If @Sender = mnuAudioSub(i) Then
 					#ifdef __USE_WINAPI__
-						If pSpVoice Then pSpVoice->SetOutput(Cast(Afx_ISpObjectToken Ptr, Sender.Tag), True)
+						If pSpVoice Then pSpVoice->SetOutput(Cast(ISpObjectToken Ptr, Sender.Tag), True)
 					#endif
 				Else
 					mnuAudioSub(i)->Checked = False
@@ -880,7 +881,7 @@ Private Sub frmClockType.Form_MouseMove(ByRef Sender As Control, MouseButton As 
 End Sub
 
 Private Sub frmClockType.Form_Resize(ByRef Sender As Control, NewWidth As Integer, NewHeight As Integer)
-	If mnuArrange.Checked Then
+	If mnuSticky.Checked Then
 		If frmDayCalendar.Handle Then
 			frmDayCalendar.Move Left, Top + Height, Width, Height * 1.78
 			If frmMonthCalendar.Handle Then frmMonthCalendar.Move Left, Top + Height * 2.78, Width, Height * 1.78

@@ -1,5 +1,5 @@
 ﻿' DrawClockCalendar 绘制时钟日历
-' Copyright (c) 2024 CM.Wang
+' Copyright (c) 2025 CM.Wang
 ' Freeware. Use at your own risk.
 
 #include once "mff/Canvas.bi"
@@ -10,8 +10,8 @@
 Type DitalClock
 Private:
 	mFontSize As Integer
-	mDt As String
-	mColon As String
+	mDt As WString Ptr
+	mColon As WString Ptr
 	mW(2) As Integer
 	mH(0) As Integer
 	mOx As Integer
@@ -23,15 +23,15 @@ Private:
 	Declare Sub CalculateSize(Canvas As My.Sys.Drawing.Canvas, ByVal byHeight As Boolean = True)
 Public:
 	mClr(5) As ULong
-	FontNameE As String
-	FontNameC As String
+	FontNameE As WString Ptr
+	FontNameC As WString Ptr
 	Mark As Long
 	Declare Constructor
 	Declare Destructor
 	Declare Property ShowSecond() As Boolean
 	Declare Property ShowSecond(b As Boolean)
-	Declare Property Colon() As String
-	Declare Property Colon(s As String)
+	Declare Property Colon() ByRef As WString
+	Declare Property Colon(s As WString)
 	Declare Function FontSize() As Integer
 	Declare Property Width() As Integer
 	Declare Property Height() As Integer
@@ -41,7 +41,7 @@ End Type
 Type DayCalendar
 Private:
 	mFontSize As Integer
-	mDt As String
+	mDt As WString Ptr
 	mShowCalendar As Boolean
 	mW(0) As Single
 	mH(3) As Single
@@ -52,8 +52,8 @@ Private:
 	Declare Sub CalculateSize(Canvas As My.Sys.Drawing.Canvas, ByVal byHeight As Boolean = True)
 Public:
 	mClr(10) As ULong
-	FontNameE As String
-	FontNameC As String
+	FontNameE As WString Ptr
+	FontNameC As WString Ptr
 	
 	Declare Constructor
 	Declare Destructor
@@ -96,8 +96,8 @@ Private:
 	'index            0     1     2     3     4     5     6     7     8
 	mC(8) As UByte = {&h00, &h1f, &h3f, &h5f, &h7f, &h9f, &hbf, &hdf, &hff}
 Public:
-	FontNameE As String
-	FontNameC As String
+	FontNameE As WString Ptr
+	FontNameC As WString Ptr
 	mClr(14) As ULong
 	
 	Declare Constructor
